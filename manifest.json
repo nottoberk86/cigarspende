@@ -1,0 +1,8 @@
+{
+  "name": "Cigar Spending",
+  "short_name": "Cigar App",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#c59b27"
+}
