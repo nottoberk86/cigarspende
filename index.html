@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cigar Spending</title>
+  <!-- Tam ekran PWA etiketleri -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <style>
+    :root {
+      --bg: #121212;
+      --card-bg: #1e1e1e;
+      --primary: #c59b27;
+      --primary-hover: #b0891e;
+      --danger: #e74c3c;
+      --text: #e0e0e0;
+      --text-muted: #888888;
+      --border: #2c2c2c;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      padding: 16px;
+      min-height: 100vh;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    header {
+      text-align: center;
+      padding: 12px 0 6px 0;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      letter-spacing: 1px;
+      color: var(--primary);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    /* Bakiye Kartı */
+    .balance-card {
+      background: linear-gradient(145deg, #222222, #181818);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+
+    .balance-title {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .balance-amount {
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: #fff;
+      margin: 8px 0;
+    }
+
+    .balance-amount.negative {
+      color: var(--danger);
+    }
+
+    .btn-budget {
+      background-color: var(--primary);
+      color: #121212;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      width: 100%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+      transition: opacity 0.2s;
+    }
+
+    .btn-budget:active {
+      opacity: 0.8;
+    }
+
+    /* Kart Yapıları */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    input {
+      background: #2a2a2a;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: var(--primary);
+    }
+
+    .btn-spend {
+      background-color: var(--danger);
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    .btn-spend:active {
+      opacity: 0.85;
+    }
+
+    .btn-details {
+      background: #2a2a2a;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 14px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      text-align: center;
+      width: 100%;
+    }
+
+    /* Modal / Detay Ekranı */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 100;
+      justify-content: center;
+      align-items: flex-end;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      width: 100%;
+      max-width: 420px;
+      max-height: 85vh;
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h2 {
+      font-size: 1.1rem;
+      color: var(--primary);
+    }
+
+    .btn-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+
+    .modal-body {
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .month-group {
+      background: #252525;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .month-header {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--primary);
+      border-bottom: 1px dashed var(--border);
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+    }
+
+    .expense-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      font-size: 0.9rem;
+      border-bottom: 1px solid #2f2f2f;
+    }
+
+    .expense-item:last-child {
+      border-bottom: none;
+    }
+
+    .expense-desc {
+      color: #fff;
+    }
+
+    .expense-date {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .expense-cost {
+      font-weight: 600;
+      color: var(--danger);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <header>
+      <h1>Cigar Spending</h1>
+    </header>
+
+    <!-- Bütçe & Kalan Tutar -->
+    <div class="balance-card">
+      <div class="balance-title">Kalan Puro Bütçesi</div>
+      <div id="balanceAmount" class="balance-amount">0.00 €</div>
+      <button class="btn-budget" onclick="addMonthlyBudget()">
+        + 50 EUR Ekle
+      </button>
+    </div>
+
+    <!-- Harcama Ekleme Formu -->
+    <div class="card">
+      <div class="card-title">Harcama Düş</div>
+      <form class="form-group" onsubmit="handleExpense(event)">
+        <input type="number" id="expenseAmount" placeholder="Tutar (€) - Örn: 18.50" step="0.01" required>
+        <input type="text" id="expenseDesc" placeholder="Açıklama (Örn: Cohiba Siglo II)" required>
+        <button type="submit" class="btn-spend">Harcamayı Kaydet</button>
+      </form>
+    </div>
+
+    <!-- Detaylar Butonu -->
+    <button class="btn-details" onclick="openModal()">
+      📊 Harcama Detayları (Aylara Göre)
+    </button>
+  </div>
+
+  <!-- Aylık Harcama Detay Modalı -->
+  <div id="detailsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Aylık Harcama Detayları</h2>
+        <button class="btn-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modalList">
+        <!-- JS ile dolacak -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Başlangıç State Yönetimi
+    let state = JSON.parse(localStorage.getItem('cigar_spending_data')) || {
+      balance: 0,
+      expenses: []
+    };
+
+    function saveState() {
+      localStorage.setItem('cigar_spending_data', JSON.stringify(state));
+      renderBalance();
+    }
+
+    function renderBalance() {
+      const balanceEl = document.getElementById('balanceAmount');
+      balanceEl.innerText = `${state.balance.toFixed(2)} €`;
+      if (state.balance < 0) {
+        balanceEl.classList.add('negative');
+      } else {
+        balanceEl.classList.remove('negative');
+      }
+    }
+
+    // 50 Euro Bütçe Ekleme
+    function addMonthlyBudget() {
+      state.balance += 50;
+      saveState();
+      alert('50 € bütçenize eklendi!');
+    }
+
+    // Harcama Ekleme
+    function handleExpense(e) {
+      e.preventDefault();
+      const amountInput = document.getElementById('expenseAmount');
+      const descInput = document.getElementById('expenseDesc');
+
+      const amount = parseFloat(amountInput.value);
+      const desc = descInput.value.trim();
+
+      if (!amount || amount <= 0 || !desc) return;
+
+      // Bakiyeden düş
+      state.balance -= amount;
+
+      // Harcamayı listeye ekle
+      state.expenses.unshift({
+        id: Date.now(),
+        amount: amount,
+        desc: desc,
+        date: new Date().toISOString()
+      });
+
+      saveState();
+
+      // Formu temizle
+      amountInput.value = '';
+      descInput.value = '';
+    }
+
+    // Modal Aç / Kapa
+    function openModal() {
+      renderDetails();
+      document.getElementById('detailsModal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('detailsModal').classList.remove('active');
+    }
+
+    // Aylara Göre Gruplandırarak Listeleme
+    function renderDetails() {
+      const modalList = document.getElementById('modalList');
+      modalList.innerHTML = '';
+
+      if (state.expenses.length === 0) {
+        modalList.innerHTML = '<p style="text-align:center; color:#888;">Henüz yapılmış bir harcama yok.</p>';
+        return;
+      }
+
+      // Harcamaları Aylara göre grupla
+      const groups = {};
+
+      state.expenses.forEach(item => {
+        const d = new Date(item.date);
+        const monthKey = d.toLocaleDateString('tr-TR', { year: 'numeric', month: 'long' });
+
+        if (!groups[monthKey]) {
+          groups[monthKey] = {
+            total: 0,
+            items: []
+          };
+        }
+        groups[monthKey].total += item.amount;
+        groups[monthKey].items.push(item);
+      });
+
+      // HTML Oluştur
+      for (const [month, data] of Object.entries(groups)) {
+        const groupEl = document.createElement('div');
+        groupEl.className = 'month-group';
+
+        groupEl.innerHTML = `
+          <div class="month-header">
+            <span>${month}</span>
+            <span>Toplam: ${data.total.toFixed(2)} €</span>
+          </div>
+          <div>
+            ${data.items.map(i => {
+              const itemDate = new Date(i.date).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+              return `
+                <div class="expense-item">
+                  <div>
+                    <div class="expense-desc">${i.desc}</div>
+                    <div class="expense-date">${itemDate}</div>
+                  </div>
+                  <div class="expense-cost">-${i.amount.toFixed(2)} €</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+        modalList.appendChild(groupEl);
+      }
+    }
+
+    // İlk Yükleme
+    renderBalance();
+  </script>
+</body>
+</html>
